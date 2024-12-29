@@ -4,6 +4,12 @@
 
 { config, pkgs, ... }:
 
+  # CONFIGURATION FOR iMac (21.5-inch, Mid 2011)
+  # Motherboard: C02H77EYDHJF
+  # CPU: 2.5 GHz Quad-Core Intel Core i5
+  # GPU: AMD Radeon HD 6750M 512 MB
+  # RAM: 18G
+
 {
   # Enable flakes
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
@@ -12,6 +18,7 @@
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
+      ../shared/sops.nix
     ];
 
   # Bootloader.
@@ -46,12 +53,6 @@
     LC_TIME = "en_GB.UTF-8";
   };
 
-  # Configure keymap in X11
-  services.xserver.xkb = {
-    layout = "us";
-    variant = "";
-  };
-
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.luke = {
     isNormalUser = true;
@@ -66,10 +67,87 @@
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-  #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-  wget
-  git
+    busybox
+    pipewire
+    wireplumber
+    git
+    vim
+    home-manager
   ];
+
+  environment.shells = with pkgs; [ zsh ];
+
+  environment.sessionVariables = {
+    NIXOS_OZONE_WL = "1";
+    WLR_NO_HARDWARE_CURSORS = "1";
+    XDG_SESSION_TYPE= "wayland";
+  };
+
+  fonts.fonts = with pkgs; [ nerdfonts ];
+
+  sound.enable = true;
+
+  services = {
+    xserver = {
+      # Configure keymap in X11
+
+      layout = "us";
+      xkbVariant = "";
+
+      # Load driver for Xorg and Wayland
+      videoDrivers = [ "amdvlk" ];
+    };
+
+    pipewire = {
+      enable = true;
+      alsa.enable = true;
+      also.support32bit = true;
+      pulse.enable = true;
+    };
+
+    open-webui.enable = true;
+
+    dbus.enable = true;
+  };
+
+  console.keyMap = "us";
+
+  hardware = {
+    bluetooth.enable = true;
+
+    opengl = {
+      enable = true;
+      driSupport = true;
+      driSupport32Bit = true;
+
+      extraPackages = with pkgs; [
+        amdvlk
+        vaapiVdpau
+        libvdpau-va-gl
+      ];
+    };
+  };
+
+  xdg.portal = {
+    config.common.default = "*";
+    enable = true;
+    wlr.enable = true;
+    extraPortals = [
+      pkgs.xdg-desktop-portal-hyprland
+      pkgs.xdg-desktop-portal-gtk
+    ]:
+  };
+
+  home-manager = {
+    useGlobalPkgs = true;
+    useUserPackages = true;
+  };
+
+  programs = {
+    zsh.enable = true;
+    ssh.startAgent = true;
+    hyprland.enable = true;
+  };
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
@@ -96,6 +174,6 @@
   # this value at the release version of the first install of this system.
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "24.11"; # Did you read the comment?
+  system.stateVersion = "24.05"; # Did you read the comment?
 
 }
