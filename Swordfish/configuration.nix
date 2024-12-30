@@ -85,8 +85,6 @@
 
   fonts.fonts = with pkgs; [ nerdfonts ];
 
-  sound.enable = true;
-
   services = {
     xserver = {
       # Configure keymap in X11
@@ -101,7 +99,6 @@
     pipewire = {
       enable = true;
       alsa.enable = true;
-      also.support32bit = true;
       pulse.enable = true;
     };
 
@@ -117,8 +114,6 @@
 
     opengl = {
       enable = true;
-      driSupport = true;
-      driSupport32Bit = true;
 
       extraPackages = with pkgs; [
         amdvlk
@@ -135,7 +130,7 @@
     extraPortals = [
       pkgs.xdg-desktop-portal-hyprland
       pkgs.xdg-desktop-portal-gtk
-    ]:
+    ];
   };
 
   home-manager = {
